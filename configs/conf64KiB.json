@@ -1,0 +1,7 @@
+{
+  transport: {
+    link: {
+      rx_buff_size: 65536,
+    },
+  },
+}
