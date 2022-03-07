@@ -1,13 +1,12 @@
 #!/bin/bash
 calc(){ awk "BEGIN { print $*}"; }
 
-tx_buffer=2
+tx_buffer=$1
 
 BIN_DIR="./executables/$tx_buffer/target/release/examples/"
 CONF_DIR="./configs/"
 LOG_DIR="./logs_general/"
 payload_size=(8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65500 128000 256000 512000 1024000)
-# payload_size=(65500 128000 256000 512000 1024000)
 configs=("64KiB.json" "128KiB.json" "256KiB.json" "512KiB.json" "1024KiB.json")
 sample_number=5
 

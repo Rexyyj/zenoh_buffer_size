@@ -1,7 +1,7 @@
 #!/bin/bash
 calc(){ awk "BEGIN { print $*}"; }
 
-BIN_DIR="./executables/8/target/release/examples/"
+BIN_DIR="../zenoh/target/release/examples/"
 CONF_DIR="./configs/"
 LOG_DIR="./logs/"
 payload_size=(8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65500 128000 256000 512000 1024000)
