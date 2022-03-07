@@ -1,7 +1,7 @@
 {
   transport: {
     link: {
-      rx_buff_size: 1048576,
+      rx_buffer_size: 1048576,
     },
   },
 }
