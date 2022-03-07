@@ -1,10 +1,10 @@
 # Usage
 
-* sub_rx_buffer.sh
+## sub_rx_buffer.sh
 It only varies the rx buffer size on subscriber.
 "plot_sub.ipynb" is used to process its output.
 
-* general_test.sh
+## general_test.sh
 This test script can be used to test varying tx and rx buffer.
 Before using, a folder name "executables" should be created in the same directory. In side it should container folders named in numbers(batch numbers) which containing the entire "target" folder of zenoh build output.
 
