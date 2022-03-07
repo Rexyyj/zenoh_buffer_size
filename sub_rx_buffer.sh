@@ -5,11 +5,14 @@ BIN_DIR="../zenoh/target/release/examples/"
 CONF_DIR="./configs/"
 LOG_DIR="./logs/"
 payload_size=(8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65500 128000 256000 512000 1024000)
-configs=("conf64KiB.json" "conf128KiB.json" "conf256KiB.json" "conf512KiB.json" "conf1MiB.json")
-sample_number=20
+configs=("64KiB.json" "128KiB.json" "256KiB.json" "512KiB.json" "1024KiB.json")
+sample_number=5
 
 thr_log_file=$LOG_DIR"thr_sub_msg.txt"
 mem_log_file=$LOG_DIR"mem_sub_msg.txt"
+
+
+echo 1 > /sys/devices/system/cpu/intel_pstate/no_turbo
 
 for ps in ${payload_size[@]}
 do
@@ -18,7 +21,7 @@ do
 	do
 		echo "Testing throughput wiht payload size $ps and config $config..."	
 		# Run publisher
-		$BIN_DIR"z_pub_thr" $ps &
+		sudo taskset -c 1 nice -n -20 $BIN_DIR"z_pub_thr" $ps &
 
 		sleep 1
 		
@@ -32,7 +35,7 @@ do
 		echo $ps $config >> $thr_log_file
 		echo "" >> $mem_log_file
 		echo $ps $config >> $mem_log_file
-		$BIN_DIR"z_sub_thr" -n $n -s $sample_number -c $CONF_DIR$config >> $thr_log_file &
+		sudo taskset -c 3 nice -n -20 $BIN_DIR"z_sub_thr" -n $n -s $sample_number -c $CONF_DIR$config >> $thr_log_file &
 		
 		sleep 0.5
 		while (( $(pidof z_sub_thr) -ne ""))
@@ -46,3 +49,4 @@ do
 	done
 done
 
+echo 0 > /sys/devices/system/cpu/intel_pstate/no_turbo
