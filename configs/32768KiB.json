@@ -1,0 +1,7 @@
+{
+  transport: {
+    link: {
+      rx_buffer_size: 33554432,
+    },
+  },
+}
