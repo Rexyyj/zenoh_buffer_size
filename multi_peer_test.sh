@@ -10,10 +10,11 @@ sub_peer_array=($(seq 1 $sub_peer_num))
 
 BIN_DIR="./executables/$tx_buffer/target/release/examples/"
 CONF_DIR="./configs/"
-LOG_DIR="./logs_multiple/"
-payload_size=(8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65500 128000 256000 512000 1024000)
-#payload_size=(8 16 32)
-configs=("64KiB.json" "128KiB.json" "256KiB.json" "512KiB.json" "1024KiB.json")
+LOG_DIR="./logs_multiple_core/"
+#payload_size=(8 16 32 64 128 256 512 1024 2048 4096 8192 16384 32768 65500 128000 256000 512000 1024000)
+#payload_size=(1024000)
+payload_size=(8 32 128 512 2048 8192 32768 65500 128000 256000 512000 1024000)
+configs=("64KiB.json" "128KiB.json" "256KiB.json" "512KiB.json" "1024KiB.json" "2048KiB.json" "4096KiB.json" "8192KiB.json" "16384KiB.json" "32768KiB.json")
 sample_number=50
 
 thr_log_file=$LOG_DIR"thr_sub"
@@ -30,9 +31,15 @@ do
 	do
 		echo "Testing throughput wiht payload size $ps and config $config..."	
 		# Run publisher
+		core_id=0
 		for pub_peer in ${pub_peer_array[@]}
 		do
-			sudo taskset -c 1 nice -n -10 $BIN_DIR"z_pub_thr" $ps -c $CONF_DIR$config &
+			sudo taskset -c $core_id nice -n -10 $BIN_DIR"z_pub_thr" $ps -c $CONF_DIR$config &
+			core_id=` expr $core_id + 1 `
+			if test $core_id -gt 6
+			then
+				core_id=0
+			fi
 			sleep 0.5
 		done
 
@@ -42,6 +49,10 @@ do
 		test_out=(`$BIN_DIR"z_sub_thr" -n 5000 -s 1 -c $CONF_DIR$config`)
 		test_out=`calc $test_out / 100`
 		n=$(echo $test_out | awk '{ print int($1); }' )
+		if test $n -lt 100
+		then
+			n=100
+		fi
 		echo "Set sample bucket size: $n"
 		
 	
@@ -63,13 +74,19 @@ do
 
 		for sub_peer in ${sub_peer_array[@]}
 		do
-			sudo taskset -c 3 nice -n -10 $BIN_DIR"z_sub_thr" -n $n -s $sample_number -c $CONF_DIR$config >> $thr_log_file$sub_peer.txt &
+			sudo taskset -c 7 nice -n -10 $BIN_DIR"z_sub_thr" -n $n -s $sample_number -c $CONF_DIR$config >> $thr_log_file$sub_peer.txt &
 			sleep 0.1
 		done
-
-		sleep 2
+		
+		err_counter=0
 		while :
 		do
+			err_counter=` expr $err_counter + 1 `
+			if test $err_counter -gt 2000
+			then
+				kill -9 $(pidof z_sub_thr)
+			fi
+
 			active_sub_peer=($(pidof z_sub_thr))
 			if test ${#active_sub_peer[@]} -eq 0
 			then
